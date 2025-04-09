@@ -4,22 +4,38 @@ import OwnerAuth from './components/Auth/OwnerAuth';
 import CustomerAuth from './components/Auth/CustomerAuth';
 import OwnerDashboard from './pages/OwnerDashboard';
 import CustomerDashboard from './pages/CustomerDashboard';
-import { AuthProvider } from './components/Auth/contexts/AuthContext';
+import RequireAuth from './components/Auth/RequireAuth';
 
 function App() {
   return (
-    <AuthProvider>    
-      <Router>
+    <Router>
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
         <Route path="/owner/auth" element={<OwnerAuth />} />
         <Route path="/customer/auth" element={<CustomerAuth />} />
-        <Route path="/owner/dashboard" element={<OwnerDashboard />} />
-        <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+
+        {/* Protected Owner Dashboard */}
+        <Route
+          path="/owner/dashboard"
+          element={
+            <RequireAuth role="owner">
+              <OwnerDashboard />
+            </RequireAuth>
+          }
+        />
+
+        {/* Protected Customer Dashboard */}
+        <Route
+          path="/customer/dashboard"
+          element={
+            <RequireAuth role="customer">
+              <CustomerDashboard />
+            </RequireAuth>
+          }
+        />
       </Routes>
     </Router>
-    </AuthProvider>
-
   );
 }
 

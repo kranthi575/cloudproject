@@ -1,6 +1,8 @@
 const API_ENDPOINT = "https://koy4qw8aaa.execute-api.us-east-1.amazonaws.com/sandbox/InventoryItems";
+const ORDER_API_ENDPOINT = "https://7awd3v3x1l.execute-api.us-east-1.amazonaws.com/dev/customerOrders";
 
 export const inventoryAPI = {
+  // 🔹 Inventory Items
   getAllItems: async () => {
     try {
       const response = await fetch(API_ENDPOINT, {
@@ -87,6 +89,41 @@ export const inventoryAPI = {
     } catch (error) {
       console.error("Error updating item:", error);
       throw error;
+    }
+  },
+
+  // 🔹 Customer Orders
+  placeOrder: async (order) => {
+    try {
+      const response = await fetch(ORDER_API_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          operation: "create",
+          ...order
+        })
+      });
+      return await response.json();
+    } catch (err) {
+      console.error("Error placing order:", err);
+      throw err;
+    }
+  },
+
+  getOrdersByEmail: async (email) => {
+    try {
+      const response = await fetch(ORDER_API_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          operation: "getByEmail",
+          email: email
+        })
+      });
+      return await response.json();
+    } catch (err) {
+      console.error("Error fetching orders:", err);
+      throw err;
     }
   }
 };
