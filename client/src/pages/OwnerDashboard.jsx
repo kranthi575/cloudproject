@@ -13,24 +13,24 @@ export default function OwnerDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
+  const [showMyItems, setShowMyItems] = useState(false);
+  const [showOrdersTab, setShowOrdersTab] = useState(false);
+  const [receivedOrders, setReceivedOrders] = useState([]);
 
-  // ✅ Safe hook usage
   useEffect(() => {
     if (auth.isAuthenticated) {
       fetchInventory();
     }
   }, [auth.isAuthenticated]);
 
-  // 🚫 Redirect unauthenticated users
   if (!auth.isAuthenticated && !auth.isLoading) {
     return <Navigate to="/" replace />;
   }
 
-  // 🔐 Logout via Cognito Hosted UI
   const signOutRedirect = () => {
-    auth.removeUser(); // Clear local user session
+    auth.removeUser();
     const clientId = "iaa957ql9401546qvgv9hos4i";
-    const logoutUri = "http://localhost:3000";
+    const logoutUri = window.location.origin;
     const cognitoDomain = "https://us-east-1ykuf68nc3.auth.us-east-1.amazoncognito.com";
     window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
   };
@@ -45,6 +45,16 @@ export default function OwnerDashboard() {
       setError("Failed to load inventory. Please try again later.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchReceivedOrders = async () => {
+    try {
+      const data = await inventoryAPI.getOrdersByOwnerEmail(auth.user?.profile?.email);
+      setReceivedOrders(data);
+    } catch (err) {
+      console.error("Failed to fetch received orders:", err);
+      setError("Could not load orders received.");
     }
   };
 
@@ -79,7 +89,7 @@ export default function OwnerDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header with user info and logout */}
+      {/* Header */}
       <div className="p-4 bg-white shadow flex justify-between items-center">
         <h1 className="text-xl font-bold text-gray-800">Inventory Management</h1>
         <div className="flex items-center gap-4">
@@ -95,10 +105,7 @@ export default function OwnerDashboard() {
 
       {/* Main content */}
       <div className="p-8 max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-          <h2 className="text-2xl font-semibold text-gray-800">
-            {showForm ? 'Add / Edit Item' : 'All Inventory Items'}
-          </h2>
+        <div className="flex flex-wrap gap-4 mb-6">
           <button
             onClick={() => {
               setEditingItem(null);
@@ -107,6 +114,27 @@ export default function OwnerDashboard() {
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
             {showForm ? 'View Inventory' : 'Add New Item'}
+          </button>
+
+          <button
+            onClick={() => setShowMyItems(!showMyItems)}
+            className={`${
+              showMyItems ? 'bg-green-700' : 'bg-green-600'
+            } text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors`}
+          >
+            {showMyItems ? 'Show All Items' : 'Show My Items'}
+          </button>
+
+          <button
+            onClick={() => {
+              setShowOrdersTab(!showOrdersTab);
+              if (!showOrdersTab) fetchReceivedOrders();
+            }}
+            className={`${
+              showOrdersTab ? 'bg-purple-700' : 'bg-purple-600'
+            } text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors`}
+          >
+            {showOrdersTab ? 'Hide Orders Received' : 'Orders Received'}
           </button>
         </div>
 
@@ -130,13 +158,44 @@ export default function OwnerDashboard() {
           />
         ) : (
           <InventoryList 
-            items={inventory}
+            items={
+              showMyItems
+                ? inventory.filter(item => item.ownerEmail === auth.user?.profile?.email)
+                : inventory
+            }
             onEdit={(item) => {
               setEditingItem(item);
               setShowForm(true);
             }}
             onDelete={handleDeleteItem}
           />
+        )}
+
+        {showOrdersTab && (
+          <div className="mt-10">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">Orders Received</h2>
+            {receivedOrders.length > 0 ? (
+              receivedOrders.map(order => (
+                <div key={order.orderId} className="bg-white p-4 rounded-lg shadow mb-4">
+                  <p className="text-sm text-gray-600">📦 Order ID: {order.orderId}</p>
+                  <p className="text-sm text-gray-600">👤 Buyer: {order.buyerEmail}</p>
+                  <p className="text-sm text-gray-600">🕒 Date: {new Date(order.createdAt).toLocaleString()}</p>
+                  <ul className="mt-2 text-sm text-gray-700 list-disc list-inside">
+                    {order.items.map((item, idx) => (
+                      <li key={idx}>
+                        {item.name} × {item.quantity} — ${item.price.toFixed(2)}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="font-semibold mt-2 text-gray-800">
+                    Total (Your Items): ${order.totalPrice.toFixed(2)}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500">No orders received yet.</p>
+            )}
+          </div>
         )}
       </div>
     </div>

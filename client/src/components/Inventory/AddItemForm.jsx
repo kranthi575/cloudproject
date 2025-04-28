@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from 'react-oidc-context';
 
 export default function AddItemForm({ item, onAdd, onUpdate, onCancel }) {
+  const { user } = useAuth(); // ✅ Access logged-in user
   const [formData, setFormData] = useState({
     id: '',
     name: '',
@@ -31,13 +33,14 @@ export default function AddItemForm({ item, onAdd, onUpdate, onCancel }) {
     const numericData = {
       ...formData,
       price: parseFloat(formData.price),
-      quantity: parseInt(formData.quantity)
+      quantity: parseInt(formData.quantity),
+      ownerEmail: user?.profile?.email || 'unknown' // ✅ Add email here
     };
 
     if (item) {
       onUpdate(numericData);
     } else {
-      onAdd(numericData);
+      onAdd(numericData); // ✅ ownerEmail now included in new item
     }
   };
 
@@ -53,7 +56,7 @@ export default function AddItemForm({ item, onAdd, onUpdate, onCancel }) {
             type="text"
             className="w-full p-2 border rounded-lg"
             value={formData.name}
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
         </div>
@@ -66,7 +69,7 @@ export default function AddItemForm({ item, onAdd, onUpdate, onCancel }) {
               step="0.01"
               className="w-full p-2 border rounded-lg"
               value={formData.price}
-              onChange={(e) => setFormData({...formData, price: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
               required
             />
           </div>
@@ -77,7 +80,7 @@ export default function AddItemForm({ item, onAdd, onUpdate, onCancel }) {
               type="number"
               className="w-full p-2 border rounded-lg"
               value={formData.quantity}
-              onChange={(e) => setFormData({...formData, quantity: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
               required
             />
           </div>

@@ -9,15 +9,16 @@ export default function CartSummary({ cartItems, onClear }) {
 
   const handlePlaceOrder = async () => {
     const order = {
-      email: auth.user?.profile?.email,
+      email: auth.user?.profile?.email, // Buyer email
       items: cartItems.map(item => ({
         name: item.name,
         quantity: item.quantity,
-        price: item.price
+        price: item.price,
+        ownerEmail: item.ownerEmail // ✅ Include owner's email
       })),
       totalPrice: total
     };
-
+  
     try {
       const result = await inventoryAPI.placeOrder(order);
       alert(`Order placed! Order ID: ${result.orderId}`);
@@ -27,7 +28,7 @@ export default function CartSummary({ cartItems, onClear }) {
       console.error(err);
     }
   };
-
+  
   return (
     <div className="relative">
       <button className="relative">

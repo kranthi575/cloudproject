@@ -43,12 +43,15 @@ export default function CustomerDashboard() {
   };
 
   const handleLogout = () => {
-    auth.removeUser();
+    auth.removeUser(); // Clear local session
+  
     const clientId = "iaa957ql9401546qvgv9hos4i";
     const logoutUri = window.location.origin;
-    const domain = "https://us-east-1ykuf68nc3.auth.us-east-1.amazoncognito.com";
-    window.location.href = `${domain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
+    const cognitoDomain = "https://us-east-1ykuf68nc3.auth.us-east-1.amazoncognito.com";
+  
+    window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
   };
+  
 
   const handleAddToCart = (item, quantity) => {
     const existing = cart.find(i => i.id === item.id);

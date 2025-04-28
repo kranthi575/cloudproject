@@ -6,7 +6,13 @@ export default function InventoryItemCustomer({ item, onAddToCart }) {
   return (
     <div className="bg-white p-4 rounded-lg shadow">
       <h3 className="text-lg font-bold mb-1">{item.name}</h3>
-      <p className="text-gray-700 mb-2">Price: ${item.price.toFixed(2)}</p>
+      <p className="text-gray-700 mb-1">Price: ${item.price.toFixed(2)}</p>
+
+      {/* ✅ Show Owner */}
+      <p className="text-sm text-gray-500 mb-2">
+        <span className="font-medium text-gray-600">Owner:</span> {item.ownerEmail || 'N/A'}
+      </p>
+
       <div className="flex items-center gap-2">
         <input
           type="number"

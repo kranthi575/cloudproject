@@ -1,7 +1,8 @@
 const API_ENDPOINT = "https://koy4qw8aaa.execute-api.us-east-1.amazonaws.com/sandbox/InventoryItems";
 const ORDER_API_ENDPOINT = "https://7awd3v3x1l.execute-api.us-east-1.amazonaws.com/dev/customerOrders";
-
 export const inventoryAPI = {
+
+  
   // 🔹 Inventory Items
   getAllItems: async () => {
     try {
@@ -24,6 +25,7 @@ export const inventoryAPI = {
   },
 
   addItem: async (item) => {
+   
     try {
       const response = await fetch(API_ENDPOINT, {
         method: "POST",
@@ -34,7 +36,9 @@ export const inventoryAPI = {
             id: item.id,
             name: item.name,
             quantity: item.quantity,
-            price: item.price
+            price: item.price,
+            ownerEmail: item.ownerEmail, // ✅ Use the email from the form
+           // owneremail: auth.user?.profile?.email,
           }
         })
       });
@@ -125,5 +129,25 @@ export const inventoryAPI = {
       console.error("Error fetching orders:", err);
       throw err;
     }
+  },
+
+  getOrdersByOwnerEmail: async (ownerEmail) => {
+    try {
+      const response = await fetch(ORDER_API_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          operation: "getByOwnerEmail",
+          ownerEmail: ownerEmail
+        })
+      });
+      return await response.json();
+    } catch (err) {
+      console.error("Error fetching orders by owner:", err);
+      throw err;
+    }
   }
 };
+
+
+
